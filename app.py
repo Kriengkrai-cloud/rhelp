@@ -23,7 +23,12 @@ PUBLIC_DIR = BASE_DIR / "public"
 # Prefer setting DATABASE_URL via environment variable.
 # For NEON with psycopg v3, use:
 #   postgresql+psycopg://USER:PASS@HOST:5432/DBNAME?sslmode=require
-DB_URL = os.getenv("DATABASE_URL", "sqlite:///./kb.db").strip()
+#DB_URL = os.getenv("DATABASE_URL", "sqlite:///./kb.db").strip()
+
+DB_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+psycopg://neondb_owner:npg_2SATnmYzbRH7@ep-wild-poetry-admjc084-pooler.c-2.us-east-1.aws.neon.tech/rhelp?sslmode=require&channel_binding=require"    
+).strip()
 
 # Only pass check_same_thread for SQLite
 connect_args = {"check_same_thread": False} if DB_URL.startswith("sqlite") else {}
