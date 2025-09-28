@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: product-kb-api
+    env: python
+    plan: free
+    region: oregon   # or frankfurt/singapore, etc.
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql+psycopg://USER:PASSWORD@HOST/DBNAME?sslmode=require
+    # Optional: set health check
+    healthCheckPath: /healthz
