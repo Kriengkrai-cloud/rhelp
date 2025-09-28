@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: product-kb-api
+    name: IT Knowledge
     env: python
     plan: free
     region: oregon   # or frankfurt/singapore, etc.
