@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Product KB</title>
+    <link rel="stylesheet" href="css/tailwind.min.css" />
+    <link rel="stylesheet" href="css/dialog-polyfill.css" />
+    <style>
+      dialog#dlg { width: 96vw; max-width: 1100px; padding: 0; border: 0; }
+      dialog#dlg form#frm { max-height: 80vh; overflow-y: auto; }
+      dialog::backdrop { background: rgba(0,0,0,.5); }
+    </style>
+    
+    
+  </head>
+  <body class="bg-white text-gray-900 p-6 font-sans">
+    <h1 class="text-2xl font-bold mb-6">Product Knowledge Base</h1>
+
+    <div class="flex flex-wrap gap-4 mb-4">
+      <input id="q" placeholder="Search name / desc / tags …"
+             class="flex-1 min-w-[240px] p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <button id="btnAdd"
+              class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">+ Add</button>
+    </div>
+
+    <div class="flex flex-wrap justify-between items-center mb-4">
+      <div class="flex items-center gap-2">
+        <label>Show per page:</label>
+        <select id="pageSize"
+                class="border border-gray-300 rounded-md p-2">
+          <option>10</option>
+          <option selected>20</option>
+          <option>50</option>
+          <option>100</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="prevBtn" class="text-blue-600 hover:underline">Previous</button>
+        <span id="pageInfo" class="text-gray-500">Page 1 / 1</span>
+        <button id="nextBtn" class="text-blue-600 hover:underline">Next</button>
+      </div>
+    </div>
+
+    <div id="meta" class="text-sm text-gray-500 mb-2">0 item(s)</div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full table-auto border-collapse border border-gray-200">
+        <thead>
+          <tr class="bg-gray-100 text-left">
+            <th class="p-3 border border-gray-200">ID</th>
+            <th class="p-3 border border-gray-200">Name</th>
+            <th class="p-3 border border-gray-200">Description</th>
+            <th class="p-3 border border-gray-200">Tags</th>
+            <th class="p-3 border border-gray-200">Action</th>
+          </tr>
+        </thead>
+        <tbody id="grid" class="bg-white text-sm"></tbody>
+      </table>
+    </div>
+
+    <dialog id="dlg" class="p-0 shadow-xl rounded-xl w-11/12 max-w-6xl">
+      <div class="p-4 border-b font-semibold text-lg" id="dlgTitle">Add product</div>
+    
+      <form id="frm"
+            class="p-4 w-11/12 max-w-5xl max-h-screen overflow-y-auto grid gap-4 sm:grid-cols-2"
+            method="dialog" onsubmit="return false;">
+        <div>
+          <label class="block text-sm mb-1">ID</label>
+          <input id="f_id" required class="w-full border p-2 rounded-md" />
+        </div>
+    
+        <div>
+          <label class="block text-sm mb-1">Name</label>
+          <input id="f_name" required class="w-full border p-2 rounded-md" />
+        </div>
+    
+        <div class="sm:col-span-2">
+          <label class="block text-sm mb-1">Description</label>
+          <textarea id="f_desc" rows="8" class="w-full border p-2 rounded-md"></textarea>
+        </div>
+    
+        <div class="sm:col-span-2">
+          <label class="block text-sm mb-1">Tags (comma-separated)</label>
+          <input id="f_tags" class="w-full border p-2 rounded-md" />
+        </div>
+      </form>
+    
+      <div class="p-4 border-t flex justify-end gap-3">
+        <button id="btnCancel" class="px-4 py-2 border rounded-md">Cancel</button>
+        <button id="btnSave" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save</button>
+      </div>
+    </dialog>        
+
+    <script src="js/dialog-polyfill.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
