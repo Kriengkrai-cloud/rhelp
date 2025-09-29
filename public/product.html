@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product</title>
+  <link rel="stylesheet" href="/css/tailwind.min.css" />
+  <style>
+    .thumb { width:130px; height:130px; object-fit:cover; border-radius:10px; border:1px solid #e5e7eb; }
+    .chip  { padding:2px 8px; font-size:12px; border-radius:9999px; background:#EEF2FF; color:#3730A3; border:1px solid #C7D2FE; }
+    .btn   { padding:6px 12px; border-radius:8px; border:1px solid #d1d5db; }
+    .btn-red { background:#EF4444; color:#fff; border-color:#EF4444; }
+    .card { border:1px solid #e5e7eb; border-radius:12px; padding:16px; background:#fff; }
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+  <div class="max-w-5xl mx-auto p-6">
+    <div class="flex items-center justify-between">
+      <a href="/" class="text-blue-600 hover:underline">&larr; Back</a>
+      <button id="btnRefresh" class="btn">Refresh</button>
+    </div>
+
+    <h1 id="title" class="text-2xl font-bold mt-3 mb-4"></h1>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="card">
+        <div class="text-xs text-gray-500">Product ID</div>
+        <div id="v_id" class="mt-1 font-mono text-sm"></div>
+      </div>
+      <div class="card sm:col-span-2">
+        <div class="text-xs text-gray-500">Name</div>
+        <div id="v_name" class="mt-1 text-lg font-semibold"></div>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="text-xs text-gray-500">Description</div>
+      <div id="v_desc" class="mt-2 text-gray-800 whitespace-pre-wrap"></div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="text-xs text-gray-500 mb-2">Tags</div>
+      <div id="v_tags" class="flex flex-wrap gap-2"></div>
+      <div id="v_tags_empty" class="text-sm text-gray-500" style="display:none;">No tags.</div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-xs text-gray-500">Images</div>
+        <div id="count" class="text-xs text-gray-500"></div>
+      </div>
+      <div id="gallery" class="flex flex-wrap gap-4"></div>
+      <div id="empty" class="text-sm text-gray-500" style="display:none;">No images yet.</div>
+    </div>
+  </div>
+
+  <script>
+    // If API is another origin, set window.API_BASE on index.html before navigation
+    const API_BASE = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : '';
+    const el = id => document.getElementById(id);
+    const chip = t => `<span class="chip">${t}</span>`;
+    const getId = () => decodeURIComponent(location.pathname.split('/').pop());
+  
+
+    function normalizeTagsFrom(it) {
+      if (Array.isArray(it?.tags) && it.tags.length) return it.tags;
+      const tj = typeof it?.tags_json === 'string' ? it.tags_json : '';
+      if (tj) {
+        try { const v = JSON.parse(tj); if (Array.isArray(v)) return v; } catch {}
+        return tj.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      return [];
+    }
+
+    function renderItem(it) {
+      const id   = typeof it?.id   === 'string' ? it.id   : '';
+      const name = typeof it?.name === 'string' ? it.name : '';
+
+      // prefer `desc`, fall back to `description`
+      let desc = '';
+      if (typeof it?.desc === 'string') desc = it.desc;
+      else if (typeof it?.description === 'string') desc = it.description;
+
+      el('title').textContent = `${id} — ${name}`;
+      el('v_id').textContent = id || '—';
+      el('v_name').textContent = name || '—';
+      el('v_desc').textContent = (desc && desc.trim()) ? desc : '—';
+
+      const tags = normalizeTagsFrom(it);
+      if (tags.length) {
+        el('v_tags').innerHTML = tags.map(chip).join('');
+        const empty = el('v_tags_empty'); if (empty) empty.style.display = 'none';
+      } else {
+        el('v_tags').innerHTML = '';
+        const empty = el('v_tags_empty'); if (empty) empty.style.display = 'block';
+      }
+    }
+
+  
+    function renderImages(list){
+      const g = el('gallery');
+      g.innerHTML = '';
+      if (!Array.isArray(list) || !list.length) {
+        el('empty').style.display = 'block';
+        el('count').textContent = '0 image';
+        return;
+      }
+      el('empty').style.display = 'none';
+      el('count').textContent = `${list.length} image${list.length>1?'s':''}`;
+  
+      list.forEach(img => {
+        const card = document.createElement('div');
+        card.className = 'relative';
+        card.innerHTML = `
+          <a href="${img.url}" target="_blank" rel="noopener">
+            <img class="thumb" src="${img.url}" alt="${img.filename||''}">
+          </a>
+          <button class="absolute top-0 right-0 m-1 btn btn-red text-xs" data-del="${img.id}" title="Delete image">&#128465;</button>
+        `;
+        g.appendChild(card);
+      });
+  
+      // delete handlers
+      g.querySelectorAll('[data-del]').forEach(btn => {
+        btn.onclick = async (e) => {
+          e.preventDefault();
+          const imgId = btn.getAttribute('data-del');
+          if (!confirm('Delete this image?')) return;
+          const r = await fetch(`${API_BASE}/api/images/${imgId}`, { method: 'DELETE' });
+          if (!r.ok) { alert(await r.text() || 'Delete failed'); return; }
+          btn.closest('.relative').remove();
+          const remaining = g.querySelectorAll('[data-del]').length;
+          el('count').textContent = `${remaining} image${remaining!==1?'s':''}`;
+          if (remaining === 0) el('empty').style.display = 'block';
+        };
+      });
+    }
+  
+    async function load(){
+      const id = getId();
+  
+      // 1) Details (always render these)
+      let it;
+      try {
+        const r = await fetch(`${API_BASE}/api/items/${encodeURIComponent(id)}`);
+        if (!r.ok) {
+          document.body.innerHTML = '<div class="p-6">Item not found. <a class="text-blue-600" href="/">Back</a></div>';
+          return;
+        }
+        it = await r.json();
+        // Debug line: uncomment to see what the API returns in DevTools console
+        // console.log('ITEM JSON', it);
+      } catch (e) {
+        document.body.innerHTML = '<div class="p-6">Failed to load item. <a class="text-blue-600" href="/">Back</a></div>';
+        return;
+      }
+      renderItem(it);
+  
+      // 2) Images (best-effort; page still works if this fails or is empty)
+      try {
+        const r2 = await fetch(`${API_BASE}/api/items/${encodeURIComponent(id)}/images`);
+        if (r2.ok) renderImages(await r2.json()); else renderImages([]);
+      } catch (e) {
+        renderImages([]);
+      }
+    }
+  
+    el('btnRefresh').onclick = load;
+    load();
+  </script>
+  
+</body>
+</html>
